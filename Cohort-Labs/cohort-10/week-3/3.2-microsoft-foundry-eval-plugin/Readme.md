@@ -1,8 +1,8 @@
-# Lab 3.2: Find Out If Your Chatbot's Answers Are Actually Good
+# Lab 3.2: Find Out If Your Agents' Response Are Actually Good
 
 In the last lab, you gave your app a code reviewer and a way to hear from feedback — but a feedback form only tells you how human *feel* about an answer, not whether it was actually correct. This lab closes that gap using Microsoft Foundry's evaluation skills.
 
-You're going to take the real questions and answers your chatbot has already given, score them properly, and then use those scores to settle a simple question: which AI model actually gives better answers?
+You're going to take the real questions and answers your Agent has already given, score them properly, and then use those scores to settle a simple question: which AI model actually gives better answers?
 
 ---
 
@@ -10,7 +10,7 @@ You're going to take the real questions and answers your chatbot has already giv
 
 - Understand what the Azure-AI Foundary Skills do, and why you need them before you can measure answer quality.
 - Know what **Relevance**, **Groundedness**, **Completeness**, and **Task Completion** mean when judging an AI's answer.
-- Have run a full evaluation of your chatbot's answers using one model (`gpt-5-nano`), then again using a different model (`gpt-5-mini`).
+- Have run a full evaluation of your Agent's answers using one model (`gpt-5-nano`), then again using a different model (`gpt-5-mini`).
 - Have a side-by-side report showing exactly how much better (or worse) one model performed than the other — backed by real scores, not guesswork.
 
 ---
@@ -30,13 +30,17 @@ You're going to take the real questions and answers your chatbot has already giv
 
 ---
 
+> **Note:** At several points in this lab, Claude will pause mid-prompt and ask you a question before continuing. Whenever that happens and a **Recommended** option is shown, click it.
+
+---
+
 ## Part 1: What Is Microsoft Foundry, and Why Are We Using It?
 
 **Microsoft Foundry** is Microsoft's platform for building, testing, and evaluating AI applications. The part we care about in this lab is evaluation: Foundry ships with ready-made, proven ways of scoring an AI's answer — so instead of you having to invent your own definition of "is this a good answer," you can lean on scoring methods that are already built and tested.
 
 You already met the idea of a **skill** in the previous lab — a pre-packaged, structured way of doing a specific task that Claude can follow precisely, instead of improvising each time. The Microsoft Foundry plugin comes with its own skills for evaluation work, and in this lab you'll use two of them: one that turns raw question-and-answer pairs into something called an **evaluation dataset**, and one that actually scores those pairs.
 
-> **Why this matters:** Without a structured way to measure quality, "is this a good chatbot?" stays a matter of opinion. Foundry gives you a repeatable process to turn that opinion into a number.
+> **Why this matters:** Without a structured way to measure quality, "is this a good Agent?" stays a matter of opinion. Foundry gives you a repeatable process to turn that opinion into a number.
 
 ### Sub-Skills
 
@@ -173,7 +177,7 @@ With Azure tooling in place, it's time to add the actual plugin that lets Claude
 
 ## Part 4: Teach Your App to Save Its Own Q&A
 
-Before you can evaluate anything, you need real questions and real answers to evaluate. Right now, every question you ask your chatbot and every answer it gives just disappears once you close the app. You need a way to capture them.
+Before you can evaluate anything, you need real questions and real answers to evaluate. Right now, every question you ask your Agent and every answer it gives just disappears once you close the app. You need a way to capture them.
 
 You're going to ask Claude to save every successful question-and-answer pair using something called **`localStorage`**. Think of `localStorage` as a small notepad that lives inside your own browser, tied to this one app — it's not a database on some server, it's just local storage on your machine, which is exactly why it doesn't need any of the backend setup you did for the feedback form in the last lab.
 
@@ -182,17 +186,17 @@ You're going to ask Claude to save every successful question-and-answer pair usi
 Open your Claude Code session pointed at `contract-review-app`, and paste this exact prompt:
 
 ```
-Update the existing contract-review-app to save successful chatbot questions and responses using browser `localStorage`.
+Update the existing contract-review-app to save successful Agent questions and responses using browser `localStorage`.
 Requirements:
 - Do not create or use a backend/server for saving responses.
-- After every successful chatbot response, automatically save the user's exact question and assistant's exact response to `localStorage`.
+- After every successful Agent response, automatically save the user's exact question and assistant's exact response to `localStorage`.
 - Save only successful responses. Do not save errors or failed requests.
 - Append new question-response pairs without removing previous ones.
 - After the first successful response, show a `Download Responses` button.
 - When clicked, export all saved question-response pairs from `localStorage` as a `config.json` file.
 - Keep updating `localStorage` as the user asks more questions.
 - If `Download Responses` is clicked again, download the latest `config.json` containing all successful responses.
-- Keep the existing contract upload and chatbot functionality unchanged.
+- Keep the existing contract upload and Agent functionality unchanged.
 - Do not make any other changes.
 Export `config.json` in this format:
 [
@@ -203,23 +207,23 @@ Export `config.json` in this format:
 ]
 ```
 
-> **Why this matters:** Only *successful* answers get saved — anything that errored out is automatically excluded. That means your evaluation dataset, later on, is built entirely from real answers your chatbot actually managed to give, not failed requests.
+> **Why this matters:** Only *successful* answers get saved — anything that errored out is automatically excluded. That means your evaluation dataset, later on, is built entirely from real answers your Agent actually managed to give, not failed requests.
 
-Claude will update your app so that after the very first successful chatbot response, a **Download Responses** button appears.
+Claude will update your app so that after the very first successful Agent response, a **Download Responses** button appears.
 
 ![Download Responses button appears after the first successful answer](./images/4.png)
 
-You now have a way to capture real chatbot conversations as test data. Next, let's actually generate some.
+You now have a way to capture real Agent conversations as test data. Next, let's actually generate some.
 
 ---
 
 ## Part 5: Round 1 — Test with GPT-5-nano
 
-Your chatbot's answers come from an AI model running inside the n8n workflow you built in earlier weeks. That workflow is the "brain" behind every answer your app gives. In this round, you'll point that brain at `gpt-5-nano` — a smaller, faster, cheaper model — and see how it performs.
+Your Agent's answers come from an AI model running inside the n8n workflow you built in earlier weeks. That workflow is the "brain" behind every answer your app gives. In this round, you'll point that brain at `gpt-5-nano` — a smaller, faster, cheaper model — and see how it performs.
 
 **Do this:**
 
-1. Open the n8n workflow that powers your chatbot — the same one you built in [Lab 2.3: Agentic RAG](../../week-2/2.3-n8n-agenticRAG/Readme.md).
+1. Open the n8n workflow that powers your Agent — the same one you built in [Lab 2.3: Agentic RAG](../../week-2/2.3-n8n-agenticRAG/Readme.md).
 2. Find where the AI model is configured for that workflow, and set the model to:
 
    ```
@@ -232,7 +236,7 @@ Your chatbot's answers come from an AI model running inside the n8n workflow you
 
    Download it in pdf format :- [Download the sample MSA contract](https://pragyaallc-my.sharepoint.com/:w:/g/personal/anurag_b_legalgraph_ai/IQBCEOeU7iyBRpVaVLJ6iVZEAYa52Oy1bcuzLvoXjVL2F5o?e=zmZTqE)  
 
-5. Ask the chatbot the following 4 questions, one at a time, waiting for each answer before asking the next:
+5. Ask the Agent the following 4 questions, one at a time, waiting for each answer before asking the next:
 
    ```
    What is the process for resolving disputes between the parties?
@@ -268,21 +272,56 @@ You have a `config.json` full of questions and answers, but Microsoft Foundry do
 
 **Do this:**
 
-In your Claude Code session, attach the `config.json` file you just downloaded and paste this prompt:
+In your Claude Code session, attach the `config.json` file you just downloaded and [sample MSA contract](https://pragyaallc-my.sharepoint.com/:w:/g/personal/anurag_b_legalgraph_ai/IQBCEOeU7iyBRpVaVLJ6iVZEAYa52Oy1bcuzLvoXjVL2F5o?e=zmZTqE) and paste this prompt:
 
 ```
-Use the Microsoft Foundry "Build an evaluation dataset" skill.
+Use the Microsoft Foundry `eval-datasets` skill.
 
-Read `config.json`, which contains question and response pairs from my contract-review chatbot.
+Read `config.json`, which contains question and response pairs from my contract-review Agent.
 
-Build an evaluation dataset from all entries using the foundry eval-datasets skill
+Build an evaluation dataset from **all entries** in `config.json`.
 
 Use:
-- `question` as the evaluation input
-- `response` as the generated model response
 
-Do not modify `config.json`.
+* `question` as the evaluation input
+* `response` as the generated model response
+
+**Important:**
+
+* Create and maintain the evaluation dataset **locally in the current project**.
+* Do **not** upload, create, or persist the evaluation dataset in Microsoft Foundry.
+* Microsoft Foundry should be used only later for running the evaluation and viewing the evaluation results.
+* Do not modify `config.json`.
+* Do not modify or overwrite the original question-response data.
+
+The final local evaluation dataset should contain every question-response pair from `config.json` and be ready to be used by the Foundry `observe` skill for evaluation.
 ```
+
+Before Claude can ask you for a project endpoint, you need to actually have one. Right now everything you've built — the plugin, the skills — lives on your machine. A **Microsoft Foundry project** is the workspace on Microsoft's side where your evaluation dataset and scores actually get stored, tied to your own account.
+
+**Watch this first:** [How to create your Microsoft Foundry account and project](YOUTUBE_LINK_HERE)
+
+**Do this:**
+
+1. Go to [Microsoft Foundry](https://ai.azure.com) and sign in with the same Microsoft account you used earlier in this lab.
+2. Create a new project — give it a name you'll recognize later, like `contract-review-eval`.
+3. Once it's created, open the project's overview page and copy its **project endpoint**. It'll look like:
+
+   ```
+   https://{account}.services.ai.azure.com/api/projects/{project}
+   ```
+
+   ![image](./images/15.png)
+
+4. Keep that endpoint handy — you're about to hand it to Claude.
+
+> **Why this matters:** Without a real Foundry project to point at, Claude has nowhere to actually build your evaluation dataset or store any scores. This is the one manual setup step in this lab that can't be automated — everything else, Claude handles for you.
+
+Claude will ask:
+
+> Do you have a Microsoft Foundry project endpoint URL? (Format: `https://{account}.services.ai.azure.com/api/projects/{project}`)
+
+Click **I'll provide it**
 
 ![image](./images/9.png)
 
@@ -296,41 +335,51 @@ Claude will use the Foundry plugin's skill to build this dataset for you from th
 
 ## Part 7: Evaluate the Answers
 
-Now for the actual scoring. Microsoft Foundry will judge each of your chatbot's answers against 4 criteria. Before you run anything, here's what each one actually means:
+Now for the actual scoring. Microsoft Foundry will judge each of your Agent's answers against 4 criteria. Before you run anything, here's what each one actually means:
 
 | Criterion | In plain English |
 |---|---|
 | **Relevance** | Does the answer directly and appropriately address the question that was actually asked? |
-| **Groundedness** | Is the answer actually supported by the contract that was uploaded — or did the chatbot make something up? |
+| **Groundedness** | Is the answer actually supported by the contract that was uploaded — or did the Agent make something up? |
 | **Completeness** | Does the answer include everything important needed to fully answer the question, or does it leave things out? |
-| **Task Completion** | Did the chatbot actually finish the job the user asked for, without missing the point or needing unnecessary follow-up? |
+| **Task Completion** | Did the Agent actually finish the job the user asked for, without missing the point or needing unnecessary follow-up? |
 
-> **Why this matters:** These 4 criteria together cover both *what* the chatbot said (Relevance, Completeness) and *whether it can be trusted* (Groundedness, Task Completion). A chatbot can sound confident and still fail on Groundedness if it's not actually backed by the contract text.
+> **Why this matters:** These 4 criteria together cover both *what* the Agent said (Relevance, Completeness) and *whether it can be trusted* (Groundedness, Task Completion). A Agent can sound confident and still fail on Groundedness if it's not actually backed by the contract text.
 
 **Do this:**
 
-In your Claude Code session, attach the `Sample MSA Contract` and paste this prompt:
-Download it in pdf format :- [Download the sample MSA contract](https://pragyaallc-my.sharepoint.com/:w:/g/personal/anurag_b_legalgraph_ai/IQBCEOeU7iyBRpVaVLJ6iVZEAYa52Oy1bcuzLvoXjVL2F5o?e=zmZTqE)  
+In the same Claude Code session where you created datasets
 
 Paste this prompt into your Claude Code session:
 
+> **Note:** Replace `[PASTE FOUNDRY PROJECT LINK HERE]` with your own project endpoint (e.g. `https://contract-review-demo.services.ai.azure.com/api/projects/contract-review-eval`).
+
 ```
-Use the Microsoft Foundry "Evaluate quality" skill to evaluate the responses in the evaluation dataset we just created.
+Use the Microsoft Foundry `observe` skill.
 
-Evaluate each response against its corresponding question using these criteria:
+Open and use this Microsoft Foundry project:
+[PASTE FOUNDRY PROJECT LINK HERE]
 
-1. Relevance — Does the response directly and appropriately answer the question?
-2. Groundedness — Is the response supported by and consistent with the uploaded contract context?
-3. Completeness — Does the response include all important information needed to answer the question?
-4. Task Completion — Did the response successfully complete what the user asked without unnecessary follow-up or missing the task?
+Evaluate the responses in the evaluation dataset we just created in this Foundry project.
 
-Use the appropriate Microsoft Foundry evaluators and run the evaluation.
+For each evaluation entry, evaluate the `response` against its corresponding `question` using these criteria:
 
-For each response, show the scores for these criteria and a short explanation of the result.
+1. **Relevance** — Does the response directly and appropriately answer the question?
+2. **Groundedness** — Is the response supported by and consistent with the contract context?
+3. **Completeness** — Does the response include all important information needed to answer the question?
+4. **Task Completion** — Did the response successfully complete what the user asked without unnecessary follow-up or missing the task?
 
-Also provide an overall summary of the evaluation results.
+Use the appropriate Microsoft Foundry evaluators available through the `observe` skill and run a batch evaluation across the complete evaluation dataset.
 
-Do not modify the original evaluation dataset
+For each response, provide:
+
+* The score for each criterion
+* A short explanation supporting each result
+
+After the evaluation is successfully completed, provide the direct Microsoft Foundry link/URL where I can open and view the evaluation results.
+
+Do not modify the original evaluation dataset.
+
 ```
 
 ![image](./images/10.png)
@@ -339,13 +388,27 @@ Claude will run each of the 4 answers through Foundry's evaluators and give you 
 
 ![Evaluation results for the GPT-5-nano round, showing scores per criterion](./images/6.png)
 
-This is your first real evaluation — a `gpt-5-nano`-powered chatbot, scored against 4 criteria, based on real questions. Now let's see if a bigger model does better.
+This is your first real evaluation — a `gpt-5-nano`-powered Agent, scored against 4 criteria, based on real questions.
+
+You'll also be able to see these evaluations directly in Microsoft Foundry itself.
+
+Click on the Url :- 
+
+![image](./images/13.png)
+
+Then it will open foundary for you :- 
+
+![image](./images/14.png)
+
+You can come back and see this same evaluation later by opening your Foundry project and clicking **Evaluations** under **Optimize** in the side panel.
+
+Now let's see if a bigger model does better.
 
 ---
 
 ## Part 8: Round 2 — Switch to GPT-5-mini, Repeat, and Compare
 
-Same contract, same 4 questions — but this time, the chatbot's answers will come from `gpt-5-mini`, the full model rather than the smaller `nano` version. This lets you compare the two models fairly, since everything else stays identical.
+Same contract, same 4 questions — but this time, the Agent's answers will come from `gpt-5-mini`, the full model rather than the smaller `nano` version. This lets you compare the two models fairly, since everything else stays identical.
 
 **Do this:**
 
@@ -359,22 +422,74 @@ Same contract, same 4 questions — but this time, the chatbot's answers will co
    ![image](./images/4.1.png)
 
 3. execute the workflow.
-4. Ask the chatbot the **exact same 4 questions** from Part 5, one at a time, in the same order.
+4. Ask the Agent the **exact same 4 questions** from Part 5, one at a time, in the same order.
 5. Click **Download Responses** again. Remember, `localStorage` never clears old entries — it only appends. So this new `config.json` contains **8 responses**: the 4 from `gpt-5-nano` plus the 4 new ones from `gpt-5-mini`, all in one file.
 
    > **Why this matters:** Having both models' answers to the exact same questions inside one file is what lets the next step compare them side by side, instead of you having to line up two separate reports by hand.
 
-6. Repeat the same two prompts from Part 6 and Part 7 on this new `config.json`:
-   - The **"Build an evaluation dataset"** prompt, to turn this new file (all 8 responses) into a Foundry evaluation dataset.
-   - The **"Evaluate quality"** prompt, to score these 8 answers on the same 4 criteria.
+6. Repeat the same steps on this new `config.json`:
+
+The **"Build dataset"** prompt, to turn this new file (all 8 responses) into a Foundry evaluation dataset.
+
+```
+Use the Microsoft Foundry `eval-datasets` skill.
+
+Read `config.json`, which contains question and response pairs from my contract-review Agent.
+
+Build an evaluation dataset from **all entries** in `config.json`.
+
+Use:
+
+* `question` as the evaluation input
+* `response` as the generated model response
+
+**Important:**
+
+* Create and maintain the evaluation dataset **locally in the current project**.
+* Do **not** upload, create, or persist the evaluation dataset in Microsoft Foundry.
+* Microsoft Foundry should be used only later for running the evaluation and viewing the evaluation results.
+* Do not modify `config.json`.
+* Do not modify or overwrite the original question-response data.
+
+The final local evaluation dataset should contain every question-response pair from `config.json` and be ready to be used by the Foundry `observe` skill for evaluation.
+```
+
+The **"Evaluation"** prompt, to score these 8 answers on the same 4 criteria.
+
+```
+Use the Microsoft Foundry `observe` skill.
+
+Open and use this Microsoft Foundry project:
+[PASTE FOUNDRY PROJECT LINK HERE]
+
+Evaluate the responses in the evaluation dataset we just created in this Foundry project.
+
+For each evaluation entry, evaluate the `response` against its corresponding `question` using these criteria:
+
+1. **Relevance** — Does the response directly and appropriately answer the question?
+2. **Groundedness** — Is the response supported by and consistent with the contract context?
+3. **Completeness** — Does the response include all important information needed to answer the question?
+4. **Task Completion** — Did the response successfully complete what the user asked without unnecessary follow-up or missing the task?
+
+Use the appropriate Microsoft Foundry evaluators available through the `observe` skill and run a batch evaluation across the complete evaluation dataset.
+
+For each response, provide:
+
+* The score for each criterion
+* A short explanation supporting each result
+
+After the evaluation is successfully completed, provide the direct Microsoft Foundry link/URL where I can open and view the evaluation results.
+
+Do not modify the original evaluation dataset.
+```
 
 ![Evaluation results for the GPT-5-mini round, showing scores per criterion](./images/7.png)
 
 You now have two complete, scored evaluations — one for `gpt-5-nano`, one for `gpt-5-mini` — both judged on the exact same questions and the exact same criteria.
 
-Claude will pull both completed evaluations and build a comparison report.
+now on foundary you will be able to see comparison report.
 
-![Final comparison report opened in the in-app preview](./images/8.png)
+![Final comparison report opened in the in-app preview](./images/14.png)
 
 ### What the Comparison Actually Showed
 
@@ -397,8 +512,8 @@ This is exactly the kind of decision evaluation is meant to support: instead of 
 
 ## What You Built
 
-- **An evaluation dataset turns opinions into numbers.** Instead of asking "does this chatbot seem good?", you now have a repeatable process that scores real answers against defined criteria — Relevance, Groundedness, Completeness, and Task Completion.
-- **Real usage data makes for a better test than made-up test cases.** Because you captured actual questions and answers from your own chatbot session using `localStorage`, your evaluation is based on how the app is really used — not hypothetical questions someone guessed a user might ask.
+- **An evaluation dataset turns opinions into numbers.** Instead of asking "does this Agent seem good?", you now have a repeatable process that scores real answers against defined criteria — Relevance, Groundedness, Completeness, and Task Completion.
+- **Real usage data makes for a better test than made-up test cases.** Because you captured actual questions and answers from your own Agent session using `localStorage`, your evaluation is based on how the app is really used — not hypothetical questions someone guessed a user might ask.
 - **Isolating one variable at a time is what makes a comparison fair.** By keeping the contract, the questions, and the evaluation criteria identical between rounds, and changing only the model, you can be confident the score difference is actually caused by the model — not by anything else changing.
 - **Systematic evaluation catches what casual testing misses.** In this run, `gpt-5-nano`'s answers might have looked fine on a quick glance, but scoring them against Completeness specifically revealed it was leaving out important information — something easy to miss just by reading answers casually.
 - **A data-backed comparison turns a cost/quality tradeoff into an actual decision.** You now know, with real scores, exactly how much quality you'd be trading away by using the cheaper `nano` model instead of the full model — instead of guessing.
