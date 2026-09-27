@@ -27,3 +27,9 @@ Now you build a real multi-agent system: one that accepts a contract PDF, routes
 You built a multi-agent system in n8n. Now you build one in Foundry using its native Workflow canvas — no code, just nodes. A Router Agent reads every incoming question and decides whether the HR Policy Agent or the Company Info Agent should answer it. You'll wire the whole thing together, test both branches live, and see exactly why routing to a specialist beats asking one agent to know everything.
 
 ---
+
+### [Lab 4.5 — Upgrade Your Contract Review App to Use Azure AI Foundry](./4.5-contract-app-foundry-upgrade/Readme.md)
+
+Your `contract-review-app` has been running against an n8n webhook since Week 2 — two hops where there could be one. Now that you have a fully configured Foundry agent (from Lab 4.1), you'll collapse that chain: one prompt to Claude Code rewires the app to call your agent directly. The browser extracts the PDF text, your app sends one API call to Foundry, and the agent's reply comes straight back. Then you verify the whole thing by watching the conversation appear in Foundry's Traces view.
+
+---
