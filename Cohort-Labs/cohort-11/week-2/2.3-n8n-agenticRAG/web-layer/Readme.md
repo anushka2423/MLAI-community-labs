@@ -283,6 +283,16 @@ Open the app fresh and walk through it slowly, checking it against the design sy
 
 ---
 
+### The Takeaway Before the Next Lesson
+
+| Contract type | How answers are stored | RAG accuracy |
+|---|---|---|
+| Lease agreement | Direct, self-contained clauses | High |
+| Loan agreement | Cross-referenced sections, defined terms, exhibits | Lower — without extra architecture |
+
+This is the exact problem the **next lab** is built to solve. When facts are scattered across a document — or across multiple documents — you need more than vector search. You need a system that can follow references, resolve defined terms, and reason across chunks.
+
+**That is where Knowledge Graphs come in.**
 
 ---
 

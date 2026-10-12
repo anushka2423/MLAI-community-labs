@@ -59,7 +59,7 @@ Think of it as a **contract research assistant with good judgment** — one that
 
 Download the following files before starting the lab:
 
-- ✅ **n8n Workflow file** — [Download the pre-built workflow JSON here](https://pragyaallc-my.sharepoint.com/:u:/g/personal/sachin_parmar_legalgraph_ai/IQAl6bWkhw51T4aHq97nKEG6ARnltIn6xb2eBXv5kbIYXJU?e=HVVUgd) if you'd like to import it instead of building from scratch.
+- ✅ **n8n Workflow file** — [Download the pre-built workflow JSON here](https://pragyaallc-my.sharepoint.com/:u:/g/personal/anushka_srivastava_legalgraph_ai/IQDSdQ5UsRtPSprLfe1iiytRAc6ypCxCv_ZCIBKU5KBCKwM?e=CjaXb4) if you'd like to import it instead of building from scratch.
 
 - [Reference Document](https://pragyaallc-my.sharepoint.com/:w:/g/personal/sachin_parmar_legalgraph_ai/IQAbCBMxqrFrT6hzD6t9oCdpAR8pdsHtVaZf2O5HiyGq5jY?e=4s3M8D) — Download the test Contract make sure you upload the contract is docx format
 ---
@@ -456,22 +456,17 @@ Download this Loan Agreement → [Click here](https://pragyaallc-my.sharepoint.c
   Instead, RAG retrieves the most relevant chunk — which only contains a pointer to the real answer, not the answer itself. The system
   cites what it found, the faithfulness check passes (because the citation technically exists), and you receive an answer that is grounded
   but practically incomplete.
+---
 
-  ---
+### Next: Give Your Agentic RAG a Web Layer
 
-  The Takeaway Before the Next Lesson
+Your n8n agent is now smarter — it decides whether a question needs a search or a quick reply. But the web app from Lab 1.2 doesn't know that. It still sends the file and the message together, to one webhook, on every send.
 
-  ┌─────────────────┬────────────────────────────────────────────────────┬────────────────────────────────────┐
-  │  Contract type  │               How answers are stored               │            RAG accuracy            │
-  ├─────────────────┼────────────────────────────────────────────────────┼────────────────────────────────────┤
-  │ Lease agreement │ Direct, self-contained clauses                     │ High                               │
-  ├─────────────────┼────────────────────────────────────────────────────┼────────────────────────────────────┤
-  │ Loan agreement  │ Cross-referenced sections, defined terms, exhibits │ Lower — without extra architecture │
-  └─────────────────┴────────────────────────────────────────────────────┴────────────────────────────────────┘
+In the next lab you bring the same `contract-review-app` up to speed with this backend:
 
-  This is the exact problem the next lab is built to solve. When facts are scattered across a document — or across multiple documents —
-  you need more than vector search. You need a system that can follow references, resolve defined terms, and reason across chunks.
+- **The wiring** — split the app's single webhook call into two: upload the PDF once to the ingestion webhook, then send only the question to the chat webhook.
+- **The look** — teach Claude Code a real design system as a skill, instead of a quick `/design` sketch.
 
-  That is where Knowledge Graphs come in.
+No new coding concepts — just Claude Code, the app you already have, and about 35 minutes.
 
-[Go to Lab 2.3.1 →](../2.3.1-web-layer/Readme.md)
+[Go to web layer →](./web-layer/Readme.md)

@@ -18,8 +18,8 @@ And you need to build that app without writing code.
 - [Prerequisites](#prerequisites)
 - [Part 1: Build First, Ask Questions Later](#part-1-build-first-ask-questions-later)
 - [Part 2: The Thing That's Missing](#part-2-the-thing-thats-missing)
-- [Part 3: One More Iteration](#part-3-one-more-iteration)
-- [Part 4: Connect to Your Real Agent](#part-4-connect-to-your-real-agent)
+- [Part 3: Connect to Your Real Agent](#part-3-connect-to-your-real-agent)
+- [Part 4: One More Iteration](#part-4-one-more-iteration)
 - [What You Learned](#what-you-learned)
 
 ---
@@ -185,83 +185,17 @@ Take a moment and really look at what Claude built.
 
 It works. The upload button takes a file. The chat takes a message and replies. The two-column layout is there.
 
-But be honest with yourself. Does it look like something *your team* would ship? Does it use your brand colors? Your preferred font? The spacing and visual style your design system follows?
+But be honest with yourself. Ask it anything about the contract and you get the exact same line back: *"This is a simulated response. AI integration coming soon."* The app isn't reading your contract. It isn't reasoning about anything. It's a shell.
 
-Probably not.
+Meanwhile, the part that can actually read and answer is sitting in n8n — the agent you built in Lab 1.1. The two have never met.
 
-Claude made decisions on your behalf. It picked a font, chose some colors, set a spacing rhythm — and they're fine. They're just not *yours*. And here's the thing that will start to bother you after a few sessions: tomorrow, if you open a new project and run a similar prompt, Claude will make completely different decisions again. It has no memory of what you showed it today. Every session starts from zero. You'd have to describe your preferences all over again, and the week after that, and every time after that.
-
-This is the friction that quietly kills momentum for most people who start building with AI tools.
+This is the gap that separates a demo from a product: the interface and the intelligence exist, but nothing connects them. Closing that gap is next.
 
 ---
 
-## Part 3: One More Iteration
+## Part 3: Connect to Your Real Agent
 
-The structure is solid and the style is aligned. Now let's improve two things: the visual finish and a contract preview panel so users can read the document while they chat.
-
-Before changing the code, let's first sketch how we want the improved app to look. Type:
-
-```text
-/design
-```
-
-/design opens a visual canvas where you can experiment with the app's layout without changing your actual project code. Use it to sketch the same improvements we're about to make — a more polished interface and a contract preview alongside the chat.
-
-In the design canvas, enter:
-
-```text
-/design Create a visual design for my contract review app with a two-column layout.
-
-- Left side: contract PDF preview
-- Right side: chat panel
-- Use a navy and orange color palette for a clean, professional feel
-- Make the layout clean, professional, and easy to read
-- Keep both panels visible side by side
-```
-
-![flow](./assets/24.png)
-
-`/design` makes no changes to your app's code — it just opens a canvas so you can see the direction before committing to it.
-
-![flow](./assets/25.png)
-
-This is the canvas: a two-column mockup you can look over and approve before asking Claude Code to build it for real.
-
-Once you're happy with the direction, bring that design back into your app:
-
-```
-Improve the prototype with two changes, matching the layout and polish
-I just sketched in above design:
-
-1. UI polish — refine the interface to feel more like a production-ready product.
-   Better spacing, visual hierarchy, and polish throughout.
-
-2. Contract preview — when the user uploads a PDF, display the contract
-   in the left panel so they can read it while asking questions in the chat.
-   Both panels should be visible and independently scrollable.
-```
-
-Refresh the browser when Claude finishes and test it end to end. Upload the sample contract — it should appear in the left panel. Type a question in the chat — you get the simulated response back. Try scrolling both panels independently.
-
-By now this session has carried you through Part 1 and this iteration — two separate builds, all in one continuous conversation. Worth checking what that actually cost. Type:
-
-```text
-/usage
-```
-
-![usage](./assets/usage.png)
-
- **`/context` vs. `/usage` — they show two different things.** `/context` shows how much of your current conversation's available space is being used, while `/usage` shows how much Claude you've used while working. Think of `/context` as checking how full your backpack is, and `/usage` as checking how far you've travelled.
-
-> ★ A prototype with dummy responses is still a prototype. You can show this to a stakeholder right now, get feedback on the layout, and validate the concept — before connecting a single line of real AI logic. Shell first. Intelligence second.
-
-If the contract doesn't show up in the left panel after uploading, just describe it to Claude: *"The PDF isn't rendering in the left panel — the chat still works but the preview is blank."* One message is usually enough to fix it.
-
----
-
-## Part 4: Connect to Your Real Agent
-
-Right now you have two things that don't know the other exists. An AI agent in n8n that reads contracts and answers questions — built in Lab 1.1. And a polished web app that collects a file and a question, but only ever replies with a dummy string — the thing you just finished.
+Right now you have two things that don't know the other exists. An AI agent in n8n that reads contracts and answers questions — built in Lab 1.1. And a web app that collects a file and a question, but only ever replies with a dummy string — the shell you built in Part 1.
 
 Every AI product has this same two-sided shape. A **user-facing side** — the buttons, the layout, the chat panel — that lives in the browser and doesn't do any real thinking. And an **intelligence side** — your n8n agent — that never appears on screen, but does the actual reading and reasoning. Right now those two sides are isolated. This part builds the bridge, using the webhook.
 
@@ -312,9 +246,19 @@ When the user clicks the Send button:
    <Your Webhook URL>
 
 3. After the webhook processes the request:
-   - Capture the response returned by the webhook
-   - Display that response inside the chat UI as the assistant reply
 
+    Capture the JSON response returned by the webhook as it Return ONLY a valid JSON object, with no markdown, no code fences and no text before or after it, in exactly this shape:
+      {
+        "response": "string - final answer based only on the retrieved contract",
+        "citation": ["string - exact clause/section/page text that supports the answer"],
+        "reasoning": "string - 1-2 sentences on how the citations support the response"
+      }
+
+4. Rules:
+  - "citation" must always be an array of strings. Use [] if nothing relevant was retrieved.
+  - Keep each citation to the relevant clause only, with its section number or page.
+  - If the contract doesn't contain the answer, say so in "response" and use an empty "citation".
+  
 Replace the dummy hardcoded responses with this webhook integration.
 ```
 
@@ -370,6 +314,70 @@ If that doesn't work, click on the Webhook node after a test run — you'll see 
 The contract file doesn't need updating — that part of the workflow is already reading it correctly. Only the user message field needs this change. Save the node.
 
 > Not sure what field name to use? Go back to your Claude Code session and ask: "What field name are you sending the user message under?" You'll get the exact answer in one message.
+---
+
+## Part 4: One More Iteration
+
+Your functional requirements are now complete — the app takes a contract, sends your question to your agent, and shows a real answer. But is it really looking like something built for your company? Right now it still has the default look Claude picked: not your brand, not your design system. Let's revamp it with two improvements: the visual finish and a contract preview panel so users can read the document while they chat.
+
+Before changing the code, let's first sketch how we want the improved app to look. Type:
+
+```text
+/design
+```
+
+/design opens a visual canvas where you can experiment with the app's layout without changing your actual project code. Use it to sketch the same improvements we're about to make — a more polished interface and a contract preview alongside the chat.
+
+In the design canvas, enter:
+
+```text
+/design Create a visual design for my contract review app with a two-column layout.
+
+- Left side: contract PDF preview
+- Right side: chat panel
+- Use a navy and orange color palette for a clean, professional feel
+- Make the layout clean, professional, and easy to read
+- Keep both panels visible side by side
+```
+
+![flow](./assets/24.png)
+
+`/design` makes no changes to your app's code — it just opens a canvas so you can see the direction before committing to it.
+
+![flow](./assets/25.png)
+
+This is the canvas: a two-column mockup you can look over and approve before asking Claude Code to build it for real.
+
+Once you're happy with the direction, bring that design back into your app:
+
+```
+Improve the prototype with two changes, matching the layout and polish
+I just sketched in above design:
+
+1. UI polish — refine the interface to feel more like a production-ready product.
+   Better spacing, visual hierarchy, and polish throughout.
+
+2. Contract preview — when the user uploads a PDF, display the contract
+   in the left panel so they can read it while asking questions in the chat.
+   Both panels should be visible and independently scrollable.
+```
+
+Refresh the browser when Claude finishes and test it end to end. Upload the sample contract — it should appear in the left panel. Type a question in the chat — you get the agent's real answer back (click **Execute Workflow** in n8n first, as before). Try scrolling both panels independently.
+
+By now this session has carried you through Part 1, the agent connection, and this iteration — three separate builds, all in one continuous conversation. Worth checking what that actually cost. Type:
+
+```text
+/usage
+```
+
+![usage](./assets/usage.png)
+
+ **`/context` vs. `/usage` — they show two different things.** `/context` shows how much of your current conversation's available space is being used, while `/usage` shows how much Claude you've used while working. Think of `/context` as checking how full your backpack is, and `/usage` as checking how far you've travelled.
+
+> ★ A prototype with dummy responses is still a prototype. You can show this to a stakeholder right now, get feedback on the layout, and validate the concept — before connecting a single line of real AI logic. Shell first. Intelligence second.
+
+If the contract doesn't show up in the left panel after uploading, just describe it to Claude: *"The PDF isn't rendering in the left panel — the chat still works but the preview is blank."* One message is usually enough to fix it.
+
 
 ---
 
@@ -411,6 +419,6 @@ You started this lab by just building — no setup, no theory, straight into a w
 | **`/usage`** | Shows how much Claude you've used across the session | Tells you how far you've traveled, not just how full your backpack is |
 | **`/compact` and `/clear`** | `/compact` summarizes the conversation to free up space; `/clear` starts a fresh context window without touching your project files | Two different ways to manage a filling context window, depending on whether you want to keep history or drop it |
 | **`/design`** | Opens a visual canvas to sketch layout and style changes without touching your app's actual code | Lets you preview and approve a direction before spending a build turn on it |
-| **Iteration-first prototyping** | Structure first, polish second, AI integration third | Trying to do all three at once is how prototypes stall |
+| **Iteration-first prototyping** | Structure first, AI integration second, polish third | Trying to do all three at once is how prototypes stall |
 | **Two-sided product shape** | A user-facing side (what you build in Claude Code) and an intelligence side (your agent) that don't know about each other until you connect them | Most AI products fail because these two sides never get wired together |
 
