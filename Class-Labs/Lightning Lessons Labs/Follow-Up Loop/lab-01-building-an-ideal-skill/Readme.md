@@ -10,8 +10,10 @@
 - [Prerequisites](#prerequisites)
 - [Part 1: Why Use a Skill Instead of a Prompt](#part-1-why-use-a-skill-instead-of-a-prompt)
 - [Part 2: What's Inside a Skill](#part-2-whats-inside-a-skill)
-- [Part 3: The Six Design Principles](#part-3-the-six-design-principles)
-- [Part 4: How a Skill Gets Built](#part-4-how-a-skill-gets-built)
+- [Part 3: How to Write the Instructions](#part-3-how-to-write-the-instructions)
+- [Part 4: The Six Design Principles](#part-4-the-six-design-principles)
+- [Part 5: How a Skill Gets Built](#part-5-how-a-skill-gets-built)
+- [Part 6: Draft Your Own Skill](#part-6-draft-your-own-skill)
 
 ---
 
@@ -19,16 +21,17 @@
 
 Every week you promise someone something — a proposal, an answer, a call — and a few of those promises slip. Finding them means digging through your inbox, and a prompt you retype won't behave the same way twice.
 
-The fix is a **skill**: a set of instructions Claude loads the same way every time. But a skill is only as good as the way it's designed. A vague one works in a demo and fails on a Tuesday.
+The fix is a **skill**: a set of instructions Claude loads the same way every time. In earlier labs you've already built skills — a `/market-research` file that fixes an output structure, and a `SKILL.md` that tells Claude what to read, what to do and what to produce. Those are a good start. But a skill that only fixes the *shape of the output* works in a demo and fails on a Tuesday, when a connector is down, a thread is ambiguous, or the data is thinner than usual.
 
-This lab is about **design only**. You won't install or run anything yet. You'll take apart a real **Follow-Up skill** — it finds who you owe a follow-up, drafts a reply to each in your own voice, and emails you one summary, without ever sending a follow-up itself — and learn what makes it reliable.
+This lab is about **design only**. You won't install or run anything yet. You'll take apart a real **Follow-Up skill** — it finds who you owe a follow-up, drafts a reply to each in your own voice, and emails you one summary, without ever sending a follow-up itself — and learn what makes a skill reliable enough to trust. Then you'll draft one of your own.
 
 Here's the flow for this lab:
 
-- **See why a skill beats a prompt.** Three problems a prompt can't solve.
-- **Take a skill apart.** The seven parts every strong skill has, and how to word them.
+- **See when a skill beats a prompt.** Three problems a prompt can't solve, and when a prompt is still the right tool.
+- **Take a skill apart.** The seven parts every strong skill has.
+- **Learn how to word the instructions.** Five habits that make rules hold up.
 - **Learn the six design principles.** The rules behind every line of this skill, ready to copy into your own.
-- **See how it was built.** Interview, draft, test, harden — and try the interview yourself.
+- **Draft your own skill.** Let Claude interview you and write the first version, then review it against a checklist.
 
 The same skill carries through the whole workshop. In [Lab 2](../lab-02-scheduling-your-skill/Readme.md) you'll download it, run it and schedule it. In [Lab 3](../lab-03-continuous-learning-loop/Readme.md) you'll teach it from your feedback. In [Lab 4](../lab-04-company-brain/Readme.md) you'll give it company context.
 
@@ -38,7 +41,11 @@ The same skill carries through the whole workshop. In [Lab 2](../lab-02-scheduli
 
 ✅ **Claude app** installed and signed in.
 
-That's all. Nothing to download in this lab — the skill itself comes in Lab 2.
+✅ **A task you repeat** — something you ask Claude for every week. You'll use it in Part 6. If nothing comes to mind, use "find the follow-ups I owe people."
+
+That's all. Nothing to download in this lab — the finished skill comes in Lab 2.
+
+> **Want to go deeper?** Anthropic's [Complete Guide to Building Skills for Claude](https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf) covers the same ground in full.
 
 ---
 
@@ -56,6 +63,17 @@ A skill fixes three things:
 
 That last row is where this workshop is going.
 
+### When to Use a Skill, and When Not To
+
+Not everything needs a skill. A good test: **every time you find yourself typing the same thing twice, that's a skill waiting to be created.**
+
+| Use a skill when… | Use a regular prompt when… |
+|---|---|
+| You run the same kind of task repeatedly | It's a one-off question or task |
+| You need the output in a consistent structure | The context changes too much each time to generalize |
+| You want to share the workflow with a teammate | You're exploring or experimenting |
+| Something goes wrong if a step is skipped | Nothing breaks if the answer is a little different |
+
 ---
 
 ## Part 2: What's Inside a Skill
@@ -66,14 +84,36 @@ A skill is a folder Claude can load on demand. Its core is one Markdown file, `S
 
 | Layer | What it holds | When Claude reads it |
 |-------|---------------|----------------------|
-| **Frontmatter** | A `name` and a `description` | Always — to decide *when* to use the skill |
+| **Frontmatter** | A `name` and a `description` (some skills add optional fields such as `version`, `tools` or `argument-hint`) | Always — to decide *when* to use the skill |
 | **Instructions** | Everything below the frontmatter | Only after the skill is picked — to decide *how* to behave |
 
 That split is why you can install many skills without slowing Claude down. It carries a one-line description of each, and loads the full instructions only for the one it needs.
 
+### Three Shapes of Skill You've Met
+
+Skills in this course come in three shapes. Each one adds something the last one lacked:
+
+| Shape | Where you've seen it | What it gives you | What it still lacks |
+|---|---|---|---|
+| **A prompt file with `$ARGUMENTS`** | `/market-research`, `/user-research`, `/prd` | A fixed output structure — you type only the topic | Limits, checks and anything for when things go wrong |
+| **A `SKILL.md` with four sections** | The `/engineering-planner` and `/design-system` skills: Purpose, Inputs, Instructions, Output | A clear contract: what it does, what it reads, how it works, what proves it finished | Quality gates, a stop-and-report rule, a way to learn |
+| **A full skill folder** | The Follow-Up skill in this workshop | All seven parts below, plus config, references and tests | — |
+
+The four-section shape and the seven parts line up like this:
+
+| Four-section `SKILL.md` | Seven parts |
+|---|---|
+| **Purpose** | 1 Description, 2 Governing rules |
+| **Inputs** | 3 Run contract, 4 Evidence gathering |
+| **Instructions** | 5 Decision rules |
+| *(missing)* | 6 Quality gates |
+| **Output** | 7 Output format |
+
+The gap is part 6 — and it's the one that separates a skill that works from a skill you can leave alone.
+
 ### The Description Is a Trigger, Not a Summary
 
-The description is the most under-written part of most skills. If it's vague, Claude never picks the skill; if it's too broad, Claude picks it at the wrong time.
+The description is the most under-written part of most skills. If it's vague, Claude never picks the skill; if it's too broad, Claude picks it at the wrong time. The best descriptions in this course's own skills list the phrases people actually say.
 
 | | Example |
 |---|---|
@@ -109,7 +149,7 @@ description: "Weekday follow-ups assistant. Use when the user asks to run follow
 ## 13. Troubleshooting and hand-off
 ```
 
-Read it top to bottom and you can see the order of a run: **limits → evidence → decision → checks → output.**
+Read it top to bottom and you can see the order of a run: **limits → evidence → decision → checks → output.** Notice that Purpose, Inputs, Instructions and Output are all still there — they've just been joined by the sections that make the skill safe to leave running.
 
 ### Supporting Files
 
@@ -142,21 +182,28 @@ Every strong skill has these seven parts, whatever the task:
 
 > **Why this matters:** weak skills have only parts 1 and 5. They describe the task but not the limits, the checks or the output — so they work in a demo and fail on a Tuesday.
 
-### How to Write the Instructions
+---
 
-Part 3 covers *what* to put in a skill. These habits cover *how to word it*:
+## Part 3: How to Write the Instructions
+
+Part 4 covers *what* to put in a skill. These habits cover *how to word it*. Some are tips you've seen in earlier labs — one job per skill, name things explicitly, say what's out of scope. The rest come from how the Follow-Up skill is written, and they matter most once a skill runs unattended.
 
 | Habit | Instead of | Write |
 |-------|-----------|-------|
+| **One job per skill, one job per section** | A skill that does five things, or a paragraph of mixed rules | One skill, one purpose you can say in a sentence; one step, one purpose, one exit check |
+| **Name things explicitly** | "Read the design document" | "Read `docs/design.md`" — vague references produce inconsistent results |
 | **Use numbers, not adjectives** | "Read enough history" | "Read the last 10 days, every page" — and keep every number in `config.md` |
 | **Say what to do when unsure** | "Be careful with drafts" | "Draft it unless a check found something concretely wrong" |
 | **Give the reason beside the rule** | "Never skip the Drafts folder" | A two-column table: the rule, and the failure it came from |
-| **One job per section** | A long paragraph of mixed rules | One step, one purpose, one exit check |
-| **Order the sections the way a run happens** | Rules scattered by topic | Limits, then evidence, then decision, then checks, then output |
+
+Two more habits for the structure of the file itself:
+
+- **Order the sections the way a run happens** — limits, then evidence, then decision, then checks, then output — so anyone reading it sees the run in order.
+- **Include a "what this is not for" line.** An out-of-scope section stops Claude over-generating or going off-track.
 
 ---
 
-## Part 3: The Six Design Principles
+## Part 4: The Six Design Principles
 
 Every rule in this skill exists because something went wrong without it. These six are the ones to copy into any skill you build.
 
@@ -208,7 +255,7 @@ Skills get ideal by being *hardened*, not by being written perfectly. When a run
 
 ---
 
-## Part 4: How a Skill Gets Built
+## Part 5: How a Skill Gets Built
 
 You don't write a skill like this top to bottom. It gets built in four passes:
 
@@ -216,8 +263,10 @@ You don't write a skill like this top to bottom. It gets built in four passes:
 |-------|--------------|--------|
 | **1. Interview** | Claude asks you questions *before* writing anything: who is this for, what counts as a follow-up, what must never happen, what a good result looks like | A clear brief |
 | **2. Draft** | Claude writes the first `SKILL.md` from the brief — the seven parts above | A first version |
-| **3. Test on real data** | Run it on a real inbox and read every draft it produced | A list of what went wrong |
+| **3. Test on real data** | Run it on a real inbox and read every output it produced | A list of what went wrong |
 | **4. Harden** | Turn each failure into a rule, add it, run again | A version you can trust |
+
+You don't write the file by hand. As in earlier labs, you describe the skill and let Claude write it — what you control is the quality of the brief.
 
 ### Try Phase 1 Yourself
 
@@ -238,7 +287,64 @@ When you have enough, summarise the brief back to me and wait for my approval.
 
 ![image](./images/1.png)
 
-Notice what Claude does — it asks, it doesn't assume. That brief becomes the governing rules and decision rules in the skill. You don't need to finish the interview. The finished skill is waiting for you in Lab 2.
+Notice what Claude does — it asks, it doesn't assume. That brief becomes the governing rules and decision rules in the skill. You don't need to finish this interview — Part 6 has you do one for a skill of your own, and the finished Follow-Up skill is waiting for you in Lab 2.
+
+---
+
+## Part 6: Draft Your Own Skill
+
+Now apply it to a task you repeat. You'll let Claude interview you and write the first version — phases 1 and 2 — then review the draft against the seven parts. You won't install or run it in this lab.
+
+### 1. Fill In the Brief
+
+Copy this prompt into a new Claude chat and fill in the brackets:
+
+```
+I want to create a new Claude skill.
+
+Skill name: [what I'll type as the slash command, e.g. weekly-status]
+Job: [one sentence — what should this skill do?]
+Never: [what must never happen]
+Reads: [the sources or files it needs]
+Output: [what should exist when it finishes, and what it looks like]
+
+Before you write anything, interview me one question at a time about
+anything above that is vague.
+
+Then write a SKILL.md with these parts:
+- a description: when to use it, what it does, and what it is not for
+- governing rules: the hard limits, each with its reason
+- a run contract: what it needs, and what it does when something is missing
+- evidence gathering: where the facts come from and how far to read
+- decision rules: how evidence becomes a judgment
+- quality gates: checks every output must pass before it is returned
+- a fixed output format
+
+Put every number in one config section at the top. Show me the draft and
+wait for my review.
+```
+
+Answer the interview honestly. When Claude asks what must never happen, give a real answer — that's the question that shapes the governing rules.
+
+### 2. Review the Draft
+
+Don't accept the first version. Read it against the seven parts:
+
+| # | Ask | If the answer is no |
+|---|-----|---------------------|
+| 1 | Does the description say **when** to use it and when **not** to? | Add the phrases you'd actually say, and an out-of-scope line |
+| 2 | Is there a **hard limit**, written as "never," with a reason? | Ask Claude to remove the dangerous ability, not just warn about it |
+| 3 | Does it say what happens when **a source is missing**? | Add a stop-and-report rule instead of letting it guess |
+| 4 | Does it say **how far to read**, in numbers? | Replace "enough" with a number and put it in config |
+| 5 | Does it say what to do when it's **unsure**? | Define two outcomes: incomplete, and wrong |
+| 6 | Is there a **check** before anything is returned? | Add a short checklist the output must pass |
+| 7 | Is the **output shape** fixed? | Name the sections and their order |
+
+Send Claude your answers and ask it to revise. One round of review usually fixes more than the interview did.
+
+### 3. Keep the Draft
+
+Save the revised `SKILL.md` somewhere you can find it. You won't run it in this lab — but you'll have a design to compare against in Lab 2, when you open the finished Follow-Up skill and find out which of your choices it made differently, and why.
 
 ---
 
@@ -246,16 +352,18 @@ Notice what Claude does — it asks, it doesn't assume. That brief becomes the g
 
 - **A skill is a prompt that's been hardened.** The Follow-Up skill isn't clever wording — it's seven parts, from a trigger description to a fixed output format, each one there because a real run went wrong without it.
 
+- **A fixed output isn't enough.** A prompt file or a four-section `SKILL.md` tells Claude what to produce. A trustworthy skill also says what it must never do, what it needs, and how it checks itself.
+
 - **The description is a trigger.** It says when to use the skill, what it does, and what it's not for.
 
 - **Good skills limit what Claude can do, not just what it should do.** The skill creates drafts instead of sending, and stops at the connector gate instead of guessing. Those aren't polite suggestions — they're the safety net.
 
 - **Word rules with numbers, reasons and a fallback.** "10 days, every page" beats "enough history"; a reason beside each rule tells you when it's safe to change; and "when unsure, draft" beats "be careful."
 
-- **Skills are hardened, not written perfectly.** The interview gets you a good first version. Real runs get you a trustworthy one.
+- **You describe, Claude writes — and you review.** The interview gets you a good first version. Reviewing it against the seven parts, then real runs, gets you a trustworthy one.
 
 ---
 
-You now know what a strong skill looks like on paper. Next you'll put one to work: download the finished Follow-Up skill, run it on your own inbox, and see what it feels like to use.
+You now know what a strong skill looks like on paper, and you've drafted one of your own. Next you'll put a finished one to work: download the Follow-Up skill, run it on your own inbox, and see what it feels like to use.
 
 [Go to Lab 2: Run and Schedule Your Skill →](../lab-02-scheduling-your-skill/Readme.md)
